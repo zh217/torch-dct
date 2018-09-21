@@ -36,7 +36,7 @@ def dct(x):
     :return: the DCT-II of the signal over the last dimension
     """
     x_shape = x.shape
-    x = x.view(-1, x_shape[-1])
+    x = x.contiguous().view(-1, x_shape[-1])
 
     v = torch.cat([x[:, ::2], x[:, 1::2].flip([1])], dim=1)
 
@@ -62,7 +62,7 @@ def idct(X):
     """
 
     x_shape = X.shape
-    X_v = X.view(-1, x_shape[-1]) / 2
+    X_v = X.contiguous().view(-1, x_shape[-1]) / 2
 
     k = torch.arange(x_shape[-1], dtype=X.dtype)[None, :] * np.pi / (2 * x_shape[-1])
     W_r = torch.cos(k)
@@ -85,16 +85,54 @@ def idct(X):
 
 
 def dct_2d(x):
-    pass
+    """
+    2-dimentional Discrete Cosine Transform, Type II (a.k.a. the DCT)
+
+    :param x: the input signal
+    :return: the DCT-II of the signal over the last 2 dimensions
+    """
+    X1 = dct(x)
+    X2 = dct(X1.transpose(-1, -2))
+    return X2.transpose(-1, -2)
 
 
 def idct_2d(X):
-    pass
+    """
+    The inverse to 2D DCT-II, which is a scaled Discrete Cosine Transform, Type III
+
+    Our definition of idct is that idct_2d(dct_2d(x)) == x
+
+    :param x: the input signal
+    :return: the DCT-II of the signal over the last 2 dimensions
+    """
+    x1 = idct(X)
+    x2 = idct(x1.transpose(-1, -2))
+    return x2.transpose(-1, -2)
 
 
 def dct_3d(x):
-    pass
+    """
+    3-dimentional Discrete Cosine Transform, Type II (a.k.a. the DCT)
+
+    :param x: the input signal
+    :return: the DCT-II of the signal over the last 3 dimensions
+    """
+    X1 = dct(x)
+    X2 = dct(X1.transpose(-1, -2))
+    X3 = dct(X2.transpose(-1, -3))
+    return X3.transpose(-1, -3).transpose(-1, -2)
 
 
 def idct_3d(X):
-    pass
+    """
+    The inverse to 3D DCT-II, which is a scaled Discrete Cosine Transform, Type III
+
+    Our definition of idct is that idct_3d(dct_3d(x)) == x
+
+    :param x: the input signal
+    :return: the DCT-II of the signal over the last 3 dimensions
+    """
+    x1 = idct(X)
+    x2 = idct(x1.transpose(-1, -2))
+    x3 = idct(x2.transpose(-1, -3))
+    return x3.transpose(-1, -3).transpose(-1, -2)

@@ -12,9 +12,6 @@ The following are currently implemented:
 
 * 1-D DCT-I and its inverse (which is a scaled DCT-I)
 * 1-D DCT-II and its inverse (which is a scaled DCT-III)
-
-The following are planned:
-
 * 2-D DCT-II and its inverse (which is a scaled DCT-III)
 * 3-D DCT-II and its inverse (which is a scaled DCT-III)
 
@@ -43,3 +40,6 @@ assert (torch.abs(x - y)).sum() < 1e-10  # x == y within numerical tolerance
 ```
 
 `dct.dct1` and `dct.idct1 are for DCT-I and its inverse. The usage is the same.
+
+Just replace `dct` and `idct` by `dct_2d`, `dct_3d`, `idct_2d`, `idct_3`, etc
+to get the multidimensional versions.

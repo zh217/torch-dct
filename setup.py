@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='torch-dct',
-    version='0.1.0',
+    version='0.1.1',
     packages=['torch_dct'],
     install_requires=['torch>=0.4.1'],
     url='https://github.com/zh217/torch-dct',
