@@ -39,7 +39,7 @@ y = dct.idct(X)  # scaled DCT-III done through the last dimension
 assert (torch.abs(x - y)).sum() < 1e-10  # x == y within numerical tolerance
 ```
 
-`dct.dct1` and `dct.idct1 are for DCT-I and its inverse. The usage is the same.
+`dct.dct1` and `dct.idct1` are for DCT-I and its inverse. The usage is the same.
 
 Just replace `dct` and `idct` by `dct_2d`, `dct_3d`, `idct_2d`, `idct_3`, etc
 to get the multidimensional versions.
