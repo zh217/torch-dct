@@ -28,43 +28,64 @@ def idct1(X):
     return dct1(X) / (2 * (n - 1))
 
 
-def dct(x):
+def dct(x, norm=None):
     """
     Discrete Cosine Transform, Type II (a.k.a. the DCT)
 
+    For the meaning of the parameter `norm`, see:
+    https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.fftpack.dct.html
+
     :param x: the input signal
+    :param norm: the normalization, None or 'ortho'
     :return: the DCT-II of the signal over the last dimension
     """
     x_shape = x.shape
-    x = x.contiguous().view(-1, x_shape[-1])
+    N = x_shape[-1]
+    x = x.contiguous().view(-1, N)
 
     v = torch.cat([x[:, ::2], x[:, 1::2].flip([1])], dim=1)
 
     Vc = torch.rfft(v, 1, onesided=False)
 
-    k = - torch.arange(x_shape[-1], dtype=x.dtype)[None, :] * np.pi / (2 * x_shape[-1])
+    k = - torch.arange(N, dtype=x.dtype)[None, :] * np.pi / (2 * N)
     W_r = torch.cos(k)
     W_i = torch.sin(k)
 
     V = Vc[:, :, 0] * W_r - Vc[:, :, 1] * W_i
 
-    return 2 * V.view(*x_shape)
+    V = 2 * V.view(*x_shape)
+
+    if norm == 'ortho':
+        V[:, 0] /= torch.sqrt(2 * N)
+        V[:, 1:] /= torch.sqrt(4 * N)
+
+    return V
 
 
-def idct(X):
+def idct(X, norm=None):
     """
     The inverse to DCT-II, which is a scaled Discrete Cosine Transform, Type III
 
     Our definition of idct is that idct(dct(x)) == x
 
+    For the meaning of the parameter `norm`, see:
+    https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.fftpack.dct.html
+
     :param X: the input signal
+    :param norm: the normalization, None or 'ortho'
     :return: the inverse DCT-II of the signal over the last dimension
     """
 
     x_shape = X.shape
+    N = x_shape[-1]
+
+    if norm == 'ortho':
+        X[:, 0] *= torch.sqrt(2 * N)
+        X[:, 1:] *= torch.sqrt(4 * N)
+
     X_v = X.contiguous().view(-1, x_shape[-1]) / 2
 
-    k = torch.arange(x_shape[-1], dtype=X.dtype)[None, :] * np.pi / (2 * x_shape[-1])
+    k = torch.arange(x_shape[-1], dtype=X.dtype)[None, :] * np.pi / (2 * N)
     W_r = torch.cos(k)
     W_i = torch.sin(k)
 
@@ -78,61 +99,77 @@ def idct(X):
 
     v = torch.irfft(V, 1, onesided=False)
     x = v.new_zeros(v.shape)
-    x[:, ::2] += v[:, :x_shape[-1] - (x_shape[-1] // 2)]
-    x[:, 1::2] += v.flip([1])[:, :x_shape[-1] // 2]
+    x[:, ::2] += v[:, :N - (N // 2)]
+    x[:, 1::2] += v.flip([1])[:, :N // 2]
 
     return x.view(*x_shape)
 
 
-def dct_2d(x):
+def dct_2d(x, norm=None):
     """
     2-dimentional Discrete Cosine Transform, Type II (a.k.a. the DCT)
 
+    For the meaning of the parameter `norm`, see:
+    https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.fftpack.dct.html
+
     :param x: the input signal
+    :param norm: the normalization, None or 'ortho'
     :return: the DCT-II of the signal over the last 2 dimensions
     """
-    X1 = dct(x)
-    X2 = dct(X1.transpose(-1, -2))
+    X1 = dct(x, norm=norm)
+    X2 = dct(X1.transpose(-1, -2), norm=norm)
     return X2.transpose(-1, -2)
 
 
-def idct_2d(X):
+def idct_2d(X, norm=None):
     """
     The inverse to 2D DCT-II, which is a scaled Discrete Cosine Transform, Type III
 
     Our definition of idct is that idct_2d(dct_2d(x)) == x
 
-    :param x: the input signal
+    For the meaning of the parameter `norm`, see:
+    https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.fftpack.dct.html
+
+    :param X: the input signal
+    :param norm: the normalization, None or 'ortho'
     :return: the DCT-II of the signal over the last 2 dimensions
     """
-    x1 = idct(X)
-    x2 = idct(x1.transpose(-1, -2))
+    x1 = idct(X, norm=norm)
+    x2 = idct(x1.transpose(-1, -2), norm=norm)
     return x2.transpose(-1, -2)
 
 
-def dct_3d(x):
+def dct_3d(x, norm=None):
     """
     3-dimentional Discrete Cosine Transform, Type II (a.k.a. the DCT)
 
+    For the meaning of the parameter `norm`, see:
+    https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.fftpack.dct.html
+
     :param x: the input signal
+    :param norm: the normalization, None or 'ortho'
     :return: the DCT-II of the signal over the last 3 dimensions
     """
-    X1 = dct(x)
-    X2 = dct(X1.transpose(-1, -2))
-    X3 = dct(X2.transpose(-1, -3))
+    X1 = dct(x, norm=norm)
+    X2 = dct(X1.transpose(-1, -2), norm=norm)
+    X3 = dct(X2.transpose(-1, -3), norm=norm)
     return X3.transpose(-1, -3).transpose(-1, -2)
 
 
-def idct_3d(X):
+def idct_3d(X, norm=None):
     """
     The inverse to 3D DCT-II, which is a scaled Discrete Cosine Transform, Type III
 
     Our definition of idct is that idct_3d(dct_3d(x)) == x
 
-    :param x: the input signal
+    For the meaning of the parameter `norm`, see:
+    https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.fftpack.dct.html
+
+    :param X: the input signal
+    :param norm: the normalization, None or 'ortho'
     :return: the DCT-II of the signal over the last 3 dimensions
     """
-    x1 = idct(X)
-    x2 = idct(x1.transpose(-1, -2))
-    x3 = idct(x2.transpose(-1, -3))
+    x1 = idct(X, norm=norm)
+    x2 = idct(x1.transpose(-1, -2), norm=norm)
+    x3 = idct(x2.transpose(-1, -3), norm=norm)
     return x3.transpose(-1, -3).transpose(-1, -2)
