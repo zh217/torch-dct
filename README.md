@@ -41,5 +41,5 @@ assert (torch.abs(x - y)).sum() < 1e-10  # x == y within numerical tolerance
 
 `dct.dct1` and `dct.idct1` are for DCT-I and its inverse. The usage is the same.
 
-Just replace `dct` and `idct` by `dct_2d`, `dct_3d`, `idct_2d`, `idct_3`, etc
+Just replace `dct` and `idct` by `dct_2d`, `dct_3d`, `idct_2d`, `idct_3d`, etc
 to get the multidimensional versions.
