@@ -2,14 +2,14 @@ from setuptools import setup
 
 setup(
     name='torch-dct',
-    version='0.1.3',
+    version='0.1.4',
     packages=['torch_dct'],
     platforms='any',
     classifiers=[
         'Development Status :: 4 - Beta',
         'License :: OSI Approved :: Apache Software License',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 3'
     ],
     install_requires=['torch>=0.4.1'],
     url='https://github.com/zh217/torch-dct',
