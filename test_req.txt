@@ -1,0 +1,5 @@
+pytest
+pytest-runner
+pytest-cov
+codecov
+torch>=0.4.1

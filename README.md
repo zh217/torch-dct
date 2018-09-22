@@ -1,5 +1,13 @@
 # DCT (Discrete Cosine Transform) for pytorch
 
+[![Build Status](https://travis-ci.com/zh217/torch-dct.svg?branch=master)](https://travis-ci.com/zh217/torch-dct)
+[![codecov](https://codecov.io/gh/zh217/torch-dct/branch/master/graph/badge.svg)](https://codecov.io/gh/zh217/torch-dct)
+[![PyPI version](https://img.shields.io/pypi/v/torch-dct.svg)](https://pypi.python.org/pypi/torch-dct/)
+[![PyPI version](https://img.shields.io/pypi/pyversions/torch-dct.svg)](https://pypi.python.org/pypi/torch-dct/)
+[![PyPI status](https://img.shields.io/pypi/status/torch-dct.svg)](https://pypi.python.org/pypi/torch-dct/)
+[![GitHub license](https://img.shields.io/github/license/zh217/torch-dct.svg)](https://github.com/zh217/torch-dct/blob/master/LICENSE)
+
+
 This library implements DCT in terms of the built-in FFT operations in pytorch so that
 back propagation works through it, on both CPU and GPU. For more information on
 DCT and the algorithms used here, see 
