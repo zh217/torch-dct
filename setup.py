@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='torch-dct',
-    version='0.1.4',
+    version='0.1.5',
     packages=['torch_dct'],
     platforms='any',
     classifiers=[

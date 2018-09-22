@@ -54,6 +54,41 @@ def test_idct():
             assert np.abs(x - y).max() < EPS, x
 
 
+def test_cuda():
+    if torch.cuda.is_available():
+        device = torch.device('cuda:0')
+
+        for N in [2, 5, 32, 111]:
+            x = np.random.normal(size=(1, N,))
+            ref = fftpack.dct(x, type=1)
+            act = dct.dct1(torch.tensor(x, device=device)).cpu().numpy()
+            assert np.abs(ref - act).max() < EPS, ref
+
+        for d in [2, 3, 4]:
+            x = np.random.normal(size=(2,) * d)
+            ref = fftpack.dct(x, type=1)
+            act = dct.dct1(torch.tensor(x, device=device)).cpu().numpy()
+            assert np.abs(ref - act).max() < EPS, ref
+
+        for norm in [None, 'ortho']:
+            for N in [2, 3, 5, 32, 111]:
+                x = np.random.normal(size=(1, N,))
+                ref = fftpack.dct(x, type=2, norm=norm)
+                act = dct.dct(torch.tensor(x, device=device), norm=norm).cpu().numpy()
+                assert np.abs(ref - act).max() < EPS, (norm, N)
+
+            for d in [2, 3, 4, 11]:
+                x = np.random.normal(size=(2,) * d)
+                ref = fftpack.dct(x, type=2, norm=norm)
+                act = dct.dct(torch.tensor(x, device=device), norm=norm).cpu().numpy()
+                assert np.abs(ref - act).max() < EPS, (norm, d)
+
+            for N in [5, 2, 32, 111]:
+                x = np.random.normal(size=(1, N))
+                X = dct.dct(torch.tensor(x, device=device), norm=norm)
+                y = dct.idct(X, norm=norm).cpu().numpy()
+                assert np.abs(x - y).max() < EPS, x
+
 def test_dct_2d():
     for N1 in [2, 5, 32]:
         for N2 in [2, 5, 32]:
