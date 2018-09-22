@@ -53,11 +53,11 @@ def dct(x, norm=None):
 
     V = Vc[:, :, 0] * W_r - Vc[:, :, 1] * W_i
 
-    V = 2 * V.view(*x_shape)
-
     if norm == 'ortho':
-        V[:, 0] /= torch.sqrt(2 * N)
-        V[:, 1:] /= torch.sqrt(4 * N)
+        V[:, 0] /= np.sqrt(N) * 2
+        V[:, 1:] /= np.sqrt(N / 2) * 2
+
+    V = 2 * V.view(*x_shape)
 
     return V
 
@@ -79,11 +79,11 @@ def idct(X, norm=None):
     x_shape = X.shape
     N = x_shape[-1]
 
-    if norm == 'ortho':
-        X[:, 0] *= torch.sqrt(2 * N)
-        X[:, 1:] *= torch.sqrt(4 * N)
-
     X_v = X.contiguous().view(-1, x_shape[-1]) / 2
+
+    if norm == 'ortho':
+        X_v[:, 0] *= np.sqrt(N) * 2
+        X_v[:, 1:] *= np.sqrt(N / 2) * 2
 
     k = torch.arange(x_shape[-1], dtype=X.dtype)[None, :] * np.pi / (2 * N)
     W_r = torch.cos(k)

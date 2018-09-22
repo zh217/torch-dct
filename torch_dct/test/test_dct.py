@@ -31,25 +31,27 @@ def test_idct1():
 
 
 def test_dct():
-    for N in [2, 5, 32, 111]:
-        x = np.random.normal(size=(1, N,))
-        ref = fftpack.dct(x, type=2)
-        act = dct.dct(torch.tensor(x)).numpy()
-        assert np.abs(ref - act).max() < EPS, ref
+    for norm in [None, 'ortho']:
+        for N in [2, 3, 5, 32, 111]:
+            x = np.random.normal(size=(1, N,))
+            ref = fftpack.dct(x, type=2, norm=norm)
+            act = dct.dct(torch.tensor(x), norm=norm).numpy()
+            assert np.abs(ref - act).max() < EPS, (norm, N)
 
-    for d in [2, 3, 4]:
-        x = np.random.normal(size=(2,) * d)
-        ref = fftpack.dct(x, type=2)
-        act = dct.dct(torch.tensor(x)).numpy()
-        assert np.abs(ref - act).max() < EPS, ref
+        for d in [2, 3, 4, 11]:
+            x = np.random.normal(size=(2,) * d)
+            ref = fftpack.dct(x, type=2, norm=norm)
+            act = dct.dct(torch.tensor(x), norm=norm).numpy()
+            assert np.abs(ref - act).max() < EPS, (norm, d)
 
 
 def test_idct():
-    for N in [5, 2, 32, 111]:
-        x = np.random.normal(size=(1, N))
-        X = dct.dct(torch.tensor(x))
-        y = dct.idct(X).numpy()
-        assert np.abs(x - y).max() < EPS, x
+    for norm in [None, 'ortho']:
+        for N in [5, 2, 32, 111]:
+            x = np.random.normal(size=(1, N))
+            X = dct.dct(torch.tensor(x), norm=norm)
+            y = dct.idct(X, norm=norm).numpy()
+            assert np.abs(x - y).max() < EPS, x
 
 
 def test_dct_2d():
