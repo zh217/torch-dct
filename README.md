@@ -29,7 +29,7 @@ The following are currently implemented:
 pip install torch-dct
 ```
 
-Requires `torch>=0.4.1` (lower versions are probably OK but I haven't test them).
+Requires `torch>=0.4.1` (lower versions are probably OK but I haven't tested them).
 
 You can run test by getting the source and run `pytest`. To run the test you also
 need `scipy` installed.
