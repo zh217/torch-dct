@@ -3,7 +3,7 @@ python:
 - "3.5.3"
 - "3.6"
 install:
-- pip install -r test_req.txt --progress-bar off
+- pip install -r test_req.txt | cat && exit ${PIPESTATUS[0]}
 script:
 - py.test --verbose --cov=./torch_dct
 - codecov
