@@ -222,3 +222,14 @@ def apply_linear_3d(x, linear_layer):
     X2 = linear_layer(X1.transpose(-1, -2))
     X3 = linear_layer(X2.transpose(-1, -3))
     return X3.transpose(-1, -3).transpose(-1, -2)
+
+if __name__ == '__main__':
+    x = torch.Tensor(1000,4096)
+    x.normal_(0,1)
+    linear_dct = LinearDCT(4096, 'dct')
+    error = torch.abs(dct(x) - linear_dct(x))
+    assert error.max() < 1e-3, (error, error.max())
+    linear_idct = LinearDCT(4096, 'idct')
+    error = torch.abs(idct(x) - linear_idct(x))
+    assert error.max() < 1e-3, (error, error.max())
+
