@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+import torch.nn as nn
 
 
 def dct1(x):
@@ -173,3 +174,51 @@ def idct_3d(X, norm=None):
     x2 = idct(x1.transpose(-1, -2), norm=norm)
     x3 = idct(x2.transpose(-1, -3), norm=norm)
     return x3.transpose(-1, -3).transpose(-1, -2)
+
+
+class LinearDCT(nn.Linear):
+    """Implement any DCT as a linear layer; in practice this executes around
+    50x faster on GPU. Unfortunately, the DCT matrix is stored, which will 
+    increase memory usage.
+    :param in_features: size of expected input
+    :param type: which dct function in this file to use"""
+    def __init__(self, in_features, type, norm=None, bias=False):
+        self.type = type
+        self.N = in_features
+        self.norm = norm
+        super(LinearDCT, self).__init__(in_features, in_features, bias=bias)
+
+    def reset_parameters(self):
+        # initialise using dct function
+        I = torch.eye(self.N)
+        if self.type == 'dct1':
+            self.weight.data = dct1(I).data.t()
+        elif self.type == 'idct1':
+            self.weight.data = idct1(I).data.t()
+        elif self.type == 'dct':
+            self.weight.data = dct(I, norm=self.norm).data.t()
+        elif self.type == 'idct':
+            self.weight.data = idct(I, norm=self.norm).data.t()
+        self.weight.require_grad = False # don't learn this!
+
+
+def apply_linear_2d(x, linear_layer):
+    """Can be used with a LinearDCT layer to do a 2D DCT.
+    :param x: the input signal
+    :param linear_layer: any PyTorch Linear layer
+    :return: result of linear layer applied to last 2 dimensions
+    """
+    X1 = linear_layer(x)
+    X2 = linear_layer(X1.transpose(-1, -2))
+    return X2.transpose(-1, -2)
+
+def apply_linear_3d(x, linear_layer):
+    """Can be used with a LinearDCT layer to do a 3D DCT.
+    :param x: the input signal
+    :param linear_layer: any PyTorch Linear layer
+    :return: result of linear layer applied to last 3 dimensions
+    """
+    X1 = linear_layer(x)
+    X2 = linear_layer(X1.transpose(-1, -2))
+    X3 = linear_layer(X2.transpose(-1, -3))
+    return X3.transpose(-1, -3).transpose(-1, -2)
