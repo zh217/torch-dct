@@ -199,7 +199,7 @@ class LinearDCT(nn.Linear):
             self.weight.data = dct(I, norm=self.norm).data.t()
         elif self.type == 'idct':
             self.weight.data = idct(I, norm=self.norm).data.t()
-        self.weight.require_grad = False # don't learn this!
+        self.weight.requires_grad = False # don't learn this!
 
 
 def apply_linear_2d(x, linear_layer):
