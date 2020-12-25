@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 import torch.nn as nn
-
+import torch.fft
 
 def dct1(x):
     """
@@ -12,8 +12,11 @@ def dct1(x):
     """
     x_shape = x.shape
     x = x.view(-1, x_shape[-1])
+    
+    v = torch.cat([x, x.flip([1])[:, 1:-1]], dim=1)
+    V = torch.view_as_real(torch.fft.fftn(v, dim=1))
 
-    return torch.rfft(torch.cat([x, x.flip([1])[:, 1:-1]], dim=1), 1)[:, :, 0].view(*x_shape)
+    return V[:, :, 0].view(*x_shape)
 
 
 def idct1(X):
@@ -43,10 +46,9 @@ def dct(x, norm=None):
     x_shape = x.shape
     N = x_shape[-1]
     x = x.contiguous().view(-1, N)
-
+    
     v = torch.cat([x[:, ::2], x[:, 1::2].flip([1])], dim=1)
-
-    Vc = torch.rfft(v, 1, onesided=False)
+    Vc = torch.view_as_real(torch.fft.fftn(v, dim=1))
 
     k = - torch.arange(N, dtype=x.dtype, device=x.device)[None, :] * np.pi / (2 * N)
     W_r = torch.cos(k)
@@ -98,7 +100,12 @@ def idct(X, norm=None):
 
     V = torch.cat([V_r.unsqueeze(2), V_i.unsqueeze(2)], dim=2)
 
-    v = torch.irfft(V, 1, onesided=False)
+    # special note: here according to some mock testing, we can
+    # see the imaginary part after ifftn() can be neglected and
+    # as a result, we can keep the real part only. However, the
+    # value-wise difference is larger than 1e-10 (around 1e-8
+    # in my tests)
+    v = torch.fft.ifftn(torch.view_as_complex(V), dim=1).real
     x = v.new_zeros(v.shape)
     x[:, ::2] += v[:, :N - (N // 2)]
     x[:, 1::2] += v.flip([1])[:, :N // 2]
