@@ -1,7 +1,14 @@
 import numpy as np
 import torch
+import torch.fft
 import torch.nn as nn
 
+# Note: we here check version of pytorch in order to decide which operation
+# will be executed. We keep the old operation due to fact that lot of users
+# are still using pytorch <= 1.7.1 so we need to hard-code such backward
+# compatbility. I think in future we can have separate packages for this
+# library w.r.t different versions of pytorch. TODO
+TORCH_VER = float(torch.__version__[:3])
 
 def dct1(x):
     """
@@ -13,7 +20,11 @@ def dct1(x):
     x_shape = x.shape
     x = x.view(-1, x_shape[-1])
 
-    return torch.rfft(torch.cat([x, x.flip([1])[:, 1:-1]], dim=1), 1)[:, :, 0].view(*x_shape)
+    if TORCH_VER >= 1.8:
+        return torch.fft.fft(torch.cat([x, x.flip([1])[:, 1:-1]], dim=1))[:, :, 0].view(*x_shape)
+    else:
+        # this option works for torch before 1.8
+        return torch.rfft(torch.cat([x, x.flip([1])[:, 1:-1]], dim=1), 1)[:, :, 0].view(*x_shape)
 
 
 def idct1(X):
@@ -45,8 +56,11 @@ def dct(x, norm=None):
     x = x.contiguous().view(-1, N)
 
     v = torch.cat([x[:, ::2], x[:, 1::2].flip([1])], dim=1)
-
-    Vc = torch.rfft(v, 1, onesided=False)
+    
+    if TORCH_VER >= 1.8:
+        Vc = torch.view_as_real(torch.fft.fft(v)) 
+    else:
+        Vc = torch.rfft(v, 1, onesided=False)
 
     k = - torch.arange(N, dtype=x.dtype, device=x.device)[None, :] * np.pi / (2 * N)
     W_r = torch.cos(k)
@@ -98,7 +112,11 @@ def idct(X, norm=None):
 
     V = torch.cat([V_r.unsqueeze(2), V_i.unsqueeze(2)], dim=2)
 
-    v = torch.irfft(V, 1, onesided=False)
+    if TORCH_VER >= 1.8:
+        v = torch.view_as_real(torch.fft.ifft(torch.view_as_complex(V)))[:,:,0]
+    else:
+        v = torch.irfft(V, 1, onesided=False)
+
     x = v.new_zeros(v.shape)
     x[:, ::2] += v[:, :N - (N // 2)]
     x[:, 1::2] += v.flip([1])[:, :N // 2]
